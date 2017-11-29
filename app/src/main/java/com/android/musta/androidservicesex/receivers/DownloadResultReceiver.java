@@ -16,21 +16,18 @@ public class DownloadResultReceiver extends ResultReceiver {
      *
      * @param handler
      */
-    private Receiver mReceiver;
+    private ResponsesReceiver mResponsesReceiver;
 
-    public DownloadResultReceiver(Handler handler) {
+    public DownloadResultReceiver(Handler handler, ResponsesReceiver responsesReceiver) {
         super(handler);
-    }
-
-    public void setReceiver(Receiver receiver) {
-        this.mReceiver = receiver;
+        this.mResponsesReceiver = responsesReceiver;
     }
 
     @Override
     protected void onReceiveResult(int resultCode, Bundle resultData) {
         //super.onReceiveResult(resultCode, resultData);
-        if (mReceiver != null) {
-            mReceiver.onReceiveResult(resultCode, resultData);
+        if (mResponsesReceiver != null) {
+            mResponsesReceiver.onReceiveResult(resultCode, resultData);
         }
     }
 }
