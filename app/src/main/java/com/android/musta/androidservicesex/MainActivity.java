@@ -2,6 +2,7 @@ package com.android.musta.androidservicesex;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -10,17 +11,21 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.musta.androidservicesex.interfaces.OnCustomBroadcastTriggeredAction;
 import com.android.musta.androidservicesex.receivers.DownloadResultReceiver;
+import com.android.musta.androidservicesex.receivers.MyPhoneReceiver;
 import com.android.musta.androidservicesex.receivers.ResponsesReceiver;
 import com.android.musta.androidservicesex.services.DownloadIntentService;
 
-public class MainActivity extends AppCompatActivity implements ResponsesReceiver {
+public class MainActivity extends AppCompatActivity implements ResponsesReceiver, OnCustomBroadcastTriggeredAction {
 
     final String url = "http://javatechig.com/api/get_category_posts/?dev=1&slug=android";
     private ListView listView = null;
     private ArrayAdapter<String> arrayAdapter = null;
     private DownloadResultReceiver mReceiver;
     private ProgressDialog progressDialog;
+    private MyPhoneReceiver myPhoneReceiver;
+    private IntentFilter powerFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +33,12 @@ public class MainActivity extends AppCompatActivity implements ResponsesReceiver
         //allow activity to show indeterminate progressbar
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_main);
+        //register broadcast receiver
+        myPhoneReceiver = new MyPhoneReceiver(this);
+        powerFilter = new IntentFilter();
+        powerFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+        powerFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        registerReceiver(myPhoneReceiver, powerFilter);
         progressDialog = new ProgressDialog(this);
         listView = findViewById(R.id.list_items);
         mReceiver = new DownloadResultReceiver(new Handler(), this);
@@ -76,6 +87,30 @@ public class MainActivity extends AppCompatActivity implements ResponsesReceiver
     private void dismissProgressDialog() {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void onPowerConnected() {
+        Toast.makeText(this, "Charger connected", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPowerDisconnected() {
+        Toast.makeText(this, "Charger disconnected", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDownloadCompleted(Bundle bundle) {
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            unregisterReceiver(myPhoneReceiver);
+        } catch (IllegalArgumentException e) {
         }
     }
 }
